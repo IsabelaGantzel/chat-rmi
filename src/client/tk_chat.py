@@ -1,0 +1,183 @@
+import tkinter as tk
+
+BG = "#e8eaf6"
+
+CONTAINER_BG = "#e8eaf6"
+
+LABEL_CONFIG = dict(
+    bg="#bbdefb"
+)
+
+SEND_MESSAGE_CONFIG = dict(
+    bg="#bbdefb",
+    activebackground="#bbdefb",
+    highlightbackground="#bbdefb",
+)
+
+SEND_FILE_CONFIG = dict(
+    bg="#f8bbd0",
+    activebackground="#f8bbd0",
+    highlightbackground="#f8bbd0",
+)
+
+MESSAGES_LIST_CONFIG = dict(
+    bg=CONTAINER_BG,
+)
+
+USERS_LIST_CONFIG = dict(
+    bg=CONTAINER_BG,
+)
+
+
+class TkChat(tk.Tk):
+    def __init__(self) -> None:
+        super().__init__()
+        self.selected_user = None
+
+        self.declare_events()
+        self.create_ui()
+
+    def declare_events(self):
+        self.on_send_message = None
+        self.on_send_file = None
+
+    def create_ui(self):
+        self.geometry("600x500")
+        self.title("UI")
+        self.configure()
+        self.grid_rows_columns(10, 12)
+        self.configure_layout((9, 4), (9, 8))
+
+        users_list_label = tk.Label(self.left, text="Users")
+        users_list_label.configure(**LABEL_CONFIG)
+        users_list_label.pack(fill=tk.BOTH)
+
+        user_list_scroll = tk.Scrollbar(self.left)
+        self.users_list = tk.Listbox(
+            self.left, yscrollcommand=user_list_scroll.set, **USERS_LIST_CONFIG)
+        self.users_list.bind("<<ListboxSelect>>", self.handle_user_select)
+        self.users_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+        user_list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        message_list_label = tk.Label(self.right, text="Messages")
+        message_list_label.configure(**LABEL_CONFIG)
+        message_list_label.pack(fill=tk.BOTH)
+
+        message_list_scroll = tk.Scrollbar(self.right)
+        self.messages_list = tk.Listbox(
+            self.right, yscrollcommand=message_list_scroll.set, **MESSAGES_LIST_CONFIG)
+        self.messages_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+        message_list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.message_input = tk.StringVar()
+        self.message_field = tk.Entry(
+            self.bottom, textvariable=self.message_input)
+        self.message_field.bind(
+            "<Return>", lambda _event: self.handle_send_button())
+        self.message_field.pack(side=tk.LEFT, fill=tk.X,
+                                expand=1, padx=(5, 0), pady=5, ipadx=5, ipady=5)
+
+        self.send_file_button = tk.Button(
+            self.bottom, text="Send File", padx=5, pady=3, command=self.handle_send_file_button)
+        self.send_file_button.configure(SEND_FILE_CONFIG)
+        self.send_file_button.pack(side=tk.RIGHT, padx=5, pady=5)
+
+        self.send_message_button = tk.Button(
+            self.bottom, text="Send", padx=5, pady=3, command=self.handle_send_button)
+        self.send_message_button.configure(**SEND_MESSAGE_CONFIG)
+        self.send_message_button.pack(side=tk.RIGHT, padx=5, pady=5)
+
+        self.users_list.insert(tk.END, "<Todos>")
+
+    def grid_columns(self, n: int) -> None:
+        for i in range(n):
+            self.columnconfigure(i, weight=1)
+
+    def grid_rows(self, n: int) -> None:
+        for i in range(n):
+            self.rowconfigure(i, weight=1)
+
+    def grid_rows_columns(self, rows: int, columns: int) -> None:
+        self.grid_rows(rows)
+        self.grid_columns(columns)
+
+    def configure_layout(self, left, right):
+        config = dict(
+            row=0,
+            column=0,
+            rowspan=left[0],
+            columnspan=left[1],
+            sticky="nsew"
+        )
+        self.left = tk.Frame(self)
+        self.left.grid(**config, padx=(5, 0), pady=5)
+
+        config["row"] = 0
+        config["column"] = config["columnspan"]
+        config["rowspan"] = right[0]
+        config["columnspan"] = right[1]
+        self.right = tk.Frame(self)
+        self.right.grid(**config, padx=5, pady=5)
+
+        config["row"] = left[0]
+        config["column"] = 0
+        config["rowspan"] = 1
+        config["columnspan"] = 12
+        self.bottom = tk.Frame(self)
+        self.bottom.grid(**config, padx=5, pady=(0, 5))
+
+    def handle_send_button(self):
+        index = self.selected_user
+        username = None if index is None else self.users_list.get(index)
+        message = self.message_input.get()
+        if message != "":
+            self.message_input.set("")
+            self.on_send_message(username, message)
+
+    def handle_send_file_button(self):
+        if self.selected_user is not None:
+            index = self.selected_user
+            username = self.users_list.get(index)
+            self.on_send_file(username)
+
+    def handle_user_select(self, event):
+        widget = event.widget
+        index = next(iter(widget.curselection()), None)
+
+        if index is not None:
+            self.selected_user = index if index != 0 else None
+
+            items = self.users_list.get(0, tk.END)
+            for i, it in enumerate(items):
+                self.users_list.delete(i)
+
+                it = it.strip("<>")
+                if i == index:
+                    it = f"<{it}>"
+
+                self.users_list.insert(i, it)
+
+    def add_message(self, message):
+        self.messages_list.insert(tk.END, message)
+
+    def add_user(self, user):
+        self.users_list.insert(tk.END, user)
+
+
+if __name__ == "__main__":
+    def on_send_message(user, message):
+        print(user, message)
+
+    def on_send_file(user):
+        print("File")
+
+    app = TkChat()
+    app.on_send_message = on_send_message
+    app.on_send_file = on_send_file
+
+    app.add_message("Hello")
+    app.add_message("World")
+    app.add_user("User 1")
+    app.add_user("User 2")
+
+    app.mainloop()
