@@ -153,8 +153,7 @@ class TkChat(tk.Tk):
         if self.on_send_message is None:
             return
 
-        index = self.selected_index
-        username = None if index is None else self.users_list.get(index)
+        username = self.get_selected_user()
         message = self.message_input.get()
         if message != "":
             self.message_input.set("")

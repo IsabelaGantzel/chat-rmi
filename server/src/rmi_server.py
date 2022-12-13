@@ -38,6 +38,16 @@ class RmiServer:
 
         self._broadcast_message(message, uri)
 
+    def send_private_message(self, message, other_username, uri):
+        if uri not in self.clients:
+            return
+
+        print("[INFO]", message)
+        for other_client in self.clients.values():
+            if other_client.username == other_username:
+                other_client.proxy.add_message(message)
+                return
+
     def get_connected_users(self):
         return [client.username for client in self.clients.values()]
 

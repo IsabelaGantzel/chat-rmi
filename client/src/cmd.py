@@ -183,6 +183,7 @@ def select_room(rooms: List[Room]) -> Room:
 
         if value >= len(rooms):
             print("Erro: Número inválido")
+            continue
 
         return rooms[value]
 

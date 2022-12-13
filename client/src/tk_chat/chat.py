@@ -35,6 +35,10 @@ def chat(api: Api, room: Room, user: User):
             message = f"{user.username}: {message}"
             rmi_client.add_message(message)
             rmi_server.send_message(message, rmi_client.uri)
+        else:
+            message = f"{user.username} -> {other_user}: {message}"
+            rmi_client.add_message(message)
+            rmi_server.send_private_message(message, other_user, rmi_client.uri)
 
     def on_send_file(other_user):
         print(other_user)
