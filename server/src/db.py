@@ -1,16 +1,19 @@
 import sqlite3
 from .models import User, Room, UserInRoom
 
+
 def connect():
-    return sqlite3.connect('chat.db')
+    return sqlite3.connect("database.db")
+
 
 # Users
+
 
 def get_next_user_id():
     connection = connect()
     cursor = connection.cursor()
     cursor.execute("SELECT MAX(id) FROM usuarios")
-    (result, ) = cursor.fetchone()
+    (result,) = cursor.fetchone()
     result = result or 0
     return result + 1
 
@@ -29,7 +32,7 @@ def get_user(username: str):
     connection = connect()
     cursor = connection.cursor()
     args = [username]
-    cursor.execute("SELECT * FROM usuarios WHERE acesso = ?", args);
+    cursor.execute("SELECT * FROM usuarios WHERE acesso = ?", args)
     result = cursor.fetchone()
     return User(*result) if result is not None else None
 
@@ -38,7 +41,7 @@ def get_user_by_id(id: int):
     connection = connect()
     cursor = connection.cursor()
     args = [id]
-    cursor.execute("SELECT * FROM usuarios WHERE id = ?", args);
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", args)
     result = cursor.fetchone()
     return User(*result) if result is not None else None
 
@@ -52,6 +55,7 @@ def clean_users():
 
 # Rooms
 
+
 def get_rooms():
     connection = connect()
     cursor = connection.cursor()
@@ -64,7 +68,7 @@ def get_next_room_id():
     connection = connect()
     cursor = connection.cursor()
     cursor.execute("SELECT MAX(id) FROM salas")
-    (result, ) = cursor.fetchone()
+    (result,) = cursor.fetchone()
     result = result or 0
     return result + 1
 
@@ -83,7 +87,10 @@ def register_room(user_id: int, name: str, uri: str, mode: int):
     cursor = connection.cursor()
     id = get_next_room_id()
     args = [id, name, uri, user_id, mode]
-    cursor.execute("INSERT INTO salas (id, nome, uri, dono_usuario_id, modo) VALUES (?, ?, ?, ?, ?)", args)
+    cursor.execute(
+        "INSERT INTO salas (id, nome, uri, dono_usuario_id, modo) VALUES (?, ?, ?, ?, ?)",
+        args,
+    )
     connection.commit()
     return get_room_by_id(id)
 
@@ -115,11 +122,14 @@ def clean_rooms():
 
 # Users In Rooms
 
+
 def remove_user_in_room(user_id: int, room_id: int) -> int:
     connection = connect()
     cursor = connection.cursor()
     args = [room_id, user_id]
-    cursor.execute("DELETE FROM usuarios_salas WHERE sala_id = ? AND usuario_id = ?", args)
+    cursor.execute(
+        "DELETE FROM usuarios_salas WHERE sala_id = ? AND usuario_id = ?", args
+    )
     connection.commit()
     return cursor.rowcount
 
@@ -128,7 +138,9 @@ def register_user_in_room(user_id: int, room_id: int):
     connection = connect()
     cursor = connection.cursor()
     args = [room_id, user_id]
-    cursor.execute("INSERT INTO usuarios_salas (sala_id, usuario_id) VALUES (?, ?)", args)
+    cursor.execute(
+        "INSERT INTO usuarios_salas (sala_id, usuario_id) VALUES (?, ?)", args
+    )
     connection.commit()
 
 

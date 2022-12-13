@@ -30,4 +30,3 @@ def signup(username: str, password: str):
         if message == "UNIQUE constraint failed: usuarios.acesso":
             return (None, AuthError.UserAlreadyExists)
         raise e
-

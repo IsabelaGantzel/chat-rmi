@@ -4,9 +4,7 @@ BG = "#e8eaf6"
 
 CONTAINER_BG = "#e8eaf6"
 
-LABEL_CONFIG = dict(
-    bg="#bbdefb"
-)
+LABEL_CONFIG = dict(bg="#bbdefb")
 
 SEND_MESSAGE_CONFIG = dict(
     bg="#bbdefb",
@@ -54,7 +52,8 @@ class TkChat(tk.Tk):
 
         user_list_scroll = tk.Scrollbar(self.left)
         self.users_list = tk.Listbox(
-            self.left, yscrollcommand=user_list_scroll.set, **USERS_LIST_CONFIG)
+            self.left, yscrollcommand=user_list_scroll.set, **USERS_LIST_CONFIG
+        )
         self.users_list.bind("<<ListboxSelect>>", self.handle_user_select)
         self.users_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
         user_list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
@@ -65,25 +64,31 @@ class TkChat(tk.Tk):
 
         message_list_scroll = tk.Scrollbar(self.right)
         self.messages_list = tk.Listbox(
-            self.right, yscrollcommand=message_list_scroll.set, **MESSAGES_LIST_CONFIG)
+            self.right, yscrollcommand=message_list_scroll.set, **MESSAGES_LIST_CONFIG
+        )
         self.messages_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
         message_list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.message_input = tk.StringVar()
-        self.message_field = tk.Entry(
-            self.bottom, textvariable=self.message_input)
-        self.message_field.bind(
-            "<Return>", lambda _event: self.handle_send_button())
-        self.message_field.pack(side=tk.LEFT, fill=tk.X,
-                                expand=1, padx=(5, 0), pady=5, ipadx=5, ipady=5)
+        self.message_field = tk.Entry(self.bottom, textvariable=self.message_input)
+        self.message_field.bind("<Return>", lambda _event: self.handle_send_button())
+        self.message_field.pack(
+            side=tk.LEFT, fill=tk.X, expand=1, padx=(5, 0), pady=5, ipadx=5, ipady=5
+        )
 
         self.send_file_button = tk.Button(
-            self.bottom, text="Send File", padx=5, pady=3, command=self.handle_send_file_button)
+            self.bottom,
+            text="Send File",
+            padx=5,
+            pady=3,
+            command=self.handle_send_file_button,
+        )
         self.send_file_button.configure(SEND_FILE_CONFIG)
         self.send_file_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.send_message_button = tk.Button(
-            self.bottom, text="Send", padx=5, pady=3, command=self.handle_send_button)
+            self.bottom, text="Send", padx=5, pady=3, command=self.handle_send_button
+        )
         self.send_message_button.configure(**SEND_MESSAGE_CONFIG)
         self.send_message_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
@@ -103,11 +108,7 @@ class TkChat(tk.Tk):
 
     def configure_layout(self, left, right):
         config = dict(
-            row=0,
-            column=0,
-            rowspan=left[0],
-            columnspan=left[1],
-            sticky="nsew"
+            row=0, column=0, rowspan=left[0], columnspan=left[1], sticky="nsew"
         )
         self.left = tk.Frame(self)
         self.left.grid(**config, padx=(5, 0), pady=5)
@@ -165,6 +166,7 @@ class TkChat(tk.Tk):
 
 
 if __name__ == "__main__":
+
     def on_send_message(user, message):
         print(user, message)
 

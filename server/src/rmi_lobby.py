@@ -1,11 +1,12 @@
 from .chat import Chat as RmiChat
-#from .rmi_chat import RmiChat
+
+# from .rmi_chat import RmiChat
 
 import Pyro4
 import threading
 
 
-class RmiLobby():
+class RmiLobby:
     def __init__(self, hostname, port):
         """hostname : str (default='localhost') - address which the daemon should run.
         - port : int (default=25501) - port which the daemon should run.
