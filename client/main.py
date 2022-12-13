@@ -1,4 +1,5 @@
-import src.cmd as cmd
+import src.cmd
+import src.cmd_tk
 from src.api import Api
 
 
@@ -7,5 +8,5 @@ if __name__ == '__main__':
     port = 25500
 
     api = Api(server, port)
-    logged_user = cmd.menu_interactive(api)
-    cmd.room_interactive(api, logged_user)
+    logged_user = src.cmd_tk.menu_interactive(api)
+    src.cmd.room_interactive(api, logged_user)

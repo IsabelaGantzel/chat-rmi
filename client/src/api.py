@@ -1,4 +1,4 @@
-import json 
+import json
 import socket
 from typing import Tuple
 
@@ -6,12 +6,13 @@ from .models import User, Room
 
 Server = Tuple[str, int]
 
+
 def send_request(server: Server, message: str):
-	socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	socket.connect(server)
-	socket.send(message.encode())
-	serialized = socket.recv(4096).decode('utf-8')
-	return json.loads(serialized)
+    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.connect(server)
+    socket.send(message.encode())
+    serialized = socket.recv(4096).decode("utf-8")
+    return json.loads(serialized)
 
 
 class Api:
@@ -19,14 +20,14 @@ class Api:
         self.server = server
         self.port = port
         self.socket = None
-    
+
     def _initilize(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.server, self.port))
-    
+
     def _send(self, message):
         self.socket.send(message.encode())
-        serialized = self.socket.recv(4096).decode('utf-8')
+        serialized = self.socket.recv(4096).decode("utf-8")
         return json.loads(serialized)
 
     def _request(self, message: str):
@@ -53,6 +54,11 @@ class Api:
 
     def connect_to_room(self, user_id: int, room_id: int) -> str:
         return self._request(f"POST connect-to-room;{user_id};{room_id}")
-    
+
     def disconnect_to_room(self, user_id: int, room_id: int) -> None:
         self._request(f"POST disconnect-to-room;{user_id};{room_id}")
+
+
+USER_NOT_FOUND = 0
+USER_ALREADY_EXISTS = 1
+INVALID_PASSWORD = 2

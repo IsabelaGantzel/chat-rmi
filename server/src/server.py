@@ -32,6 +32,7 @@ class Server():
         print("Running server")
         self._server.listen()
 
+        db.clean_rooms()
         while True:
             conn, _ = self._server.accept()
             message = conn.recv(2048).decode('utf-8')
