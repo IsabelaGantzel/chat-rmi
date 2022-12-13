@@ -1,7 +1,7 @@
 import threading
 import Pyro4
 from .models import User
-from .tk.chat import TkChat
+from .tk.tk_chat import TkChat
 
 
 @Pyro4.expose
@@ -32,7 +32,19 @@ class RmiClient:
         if self.ui.running:
             self.ui.remove_user(username)
 
+    def user_removed(self):
+        if self.ui.running:
+            self.ui.handle_close()
+
     @property
     def username(self):
-        print(self.user)
         return self.user.username
+
+    def __eq__(self, other):
+        return self.username == other.username
+
+    def __str__(self):
+        return self.username
+
+    def __repr__(self):
+        return self.username

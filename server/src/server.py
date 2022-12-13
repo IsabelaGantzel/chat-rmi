@@ -64,6 +64,12 @@ class Server:
                 result = None
                 if user is not None:
                     chat_mode = values[2]
+
+                    rooms = db.get_rooms_by_owner(user_id)
+                    for room in rooms:
+                        db.remove_room(room.id)
+                        self.lobby.unregister(room.id)
+
                     result = db.register_room(user.id, room_name, uri, chat_mode)
 
                 conn.send(json.dumps(result).encode())

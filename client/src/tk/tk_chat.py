@@ -28,11 +28,12 @@ USERS_LIST_CONFIG = dict(
 
 
 class TkChat(tk.Tk):
-    def __init__(self, title) -> None:
+    def __init__(self, title, admin) -> None:
         super().__init__()
-        self.selected_user = None
+        self.selected_index = None
         self.running = False
         self.title(title)
+        self.admin = admin
 
         self.declare_events()
         self.create_ui()
@@ -41,6 +42,7 @@ class TkChat(tk.Tk):
         self.on_send_message = None
         self.on_send_file = None
         self.on_close = None
+        self.on_delete = None
 
     def create_ui(self):
         self.geometry("600x500")
@@ -78,9 +80,20 @@ class TkChat(tk.Tk):
             side=tk.LEFT, fill=tk.X, expand=1, padx=(5, 0), pady=5, ipadx=5, ipady=5
         )
 
+        if self.admin:
+            self.delete_button = tk.Button(
+                self.bottom,
+                text="Deletar",
+                padx=5,
+                pady=3,
+                command=self.handle_delete_button,
+            )
+            self.delete_button.configure(SEND_FILE_CONFIG)
+            self.delete_button.pack(side=tk.RIGHT, padx=5, pady=5)
+
         self.send_file_button = tk.Button(
             self.bottom,
-            text="Send File",
+            text="Enviar arquivo",
             padx=5,
             pady=3,
             command=self.handle_send_file_button,
@@ -89,7 +102,7 @@ class TkChat(tk.Tk):
         self.send_file_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.send_message_button = tk.Button(
-            self.bottom, text="Send", padx=5, pady=3, command=self.handle_send_button
+            self.bottom, text="Enviar", padx=5, pady=3, command=self.handle_send_button
         )
         self.send_message_button.configure(**SEND_MESSAGE_CONFIG)
         self.send_message_button.pack(side=tk.RIGHT, padx=5, pady=5)
@@ -134,40 +147,55 @@ class TkChat(tk.Tk):
     def handle_close(self):
         if self.on_close is not None:
             self.on_close()
-        self.destroy()
+        self.quit()
 
     def handle_send_button(self):
         if self.on_send_message is None:
             return
 
-        index = self.selected_user
+        index = self.selected_index
         username = None if index is None else self.users_list.get(index)
         message = self.message_input.get()
         if message != "":
             self.message_input.set("")
             self.on_send_message(username, message)
 
+    def get_selected_user(self):
+        if self.selected_index is not None:
+            index = self.selected_index
+            username = self.users_list.get(index)
+            return username.strip("<>")
+
     def handle_send_file_button(self):
         if self.on_send_file is None:
             return
 
-        if self.selected_user is not None:
-            index = self.selected_user
-            username = self.users_list.get(index)
-            self.on_send_file(username)
+        selected_user = self.get_selected_user()
+        if selected_user is not None:
+            self.on_send_file(selected_user)
+
+    def handle_delete_button(self):
+        if self.on_delete is None:
+            return
+
+        selected_user = self.get_selected_user()
+        if selected_user is not None:
+            self.on_delete(selected_user)
+
+    def get_user_list(self):
+        return [it.strip("<>") for it in self.users_list.get(0, tk.END)]
 
     def handle_user_select(self, event):
         widget = event.widget
         index = next(iter(widget.curselection()), None)
 
         if index is not None:
-            self.selected_user = index if index != 0 else None
+            self.selected_index = index if index != 0 else None
 
-            items = self.users_list.get(0, tk.END)
+            items = self.get_user_list()
             for i, it in enumerate(items):
                 self.users_list.delete(i)
 
-                it = it.strip("<>")
                 if i == index:
                     it = f"<{it}>"
 
@@ -180,7 +208,7 @@ class TkChat(tk.Tk):
         self.users_list.insert(tk.END, user)
 
     def remove_user(self, user: str):
-        index = self.users_list.get(0, tk.END).index(user)
+        index = self.get_user_list().index(user)
         self.users_list.delete(index)
 
     def run(self):
@@ -198,15 +226,20 @@ if __name__ == "__main__":
         print(user, message)
 
     def on_send_file(user):
-        print("File")
+        print("File", user)
+
+    def on_delete(user):
+        print("Deletar", user)
 
     def on_close():
         print("Close")
 
     app = TkChat()
+
     app.on_send_message = on_send_message
     app.on_send_file = on_send_file
     app.on_close = on_close
+    app.on_delete = on_delete
 
     app.add_message("Hello")
     app.add_message("World")

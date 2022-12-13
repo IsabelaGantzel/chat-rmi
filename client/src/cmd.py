@@ -146,7 +146,6 @@ def menu_interactive(api: Api):
 
 def room_menu(api: Api):
     while True:
-        rooms = api.get_rooms()
         print()
         print("Menu das salas:")
         print("  1. Entrar em uma sala")
@@ -155,6 +154,8 @@ def room_menu(api: Api):
         value = get_value()
 
         if value == "1":
+            rooms = api.get_rooms()
+
             if len(rooms) == 0:
                 print("Erro: Não existem salas para entrar")
                 continue
@@ -169,8 +170,8 @@ def room_menu(api: Api):
 def select_room(rooms: List[Room]) -> Room:
     while True:
         print("Chats disponíveis:")
-        for n, room_name in enumerate(rooms):
-            print(f"  {n}: {room_name}")
+        for n, room in enumerate(rooms):
+            print(f"  {n}: {room.name}")
 
         value = get_value()
 

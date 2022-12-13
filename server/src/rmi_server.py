@@ -14,9 +14,6 @@ class RmiServer:
         self.clients = {}
 
     def connect(self, uri):
-        if uri in self.clients:
-            return None
-
         proxy = Pyro4.Proxy(uri)
         client = Client(proxy, proxy.username, uri)
         self.clients[uri] = client
@@ -43,6 +40,12 @@ class RmiServer:
 
     def get_connected_users(self):
         return [client.username for client in self.clients.values()]
+
+    def delete_user(self, username):
+        for client in self.clients.values():
+            if client.username == username:
+                client.proxy.user_removed()
+                return
 
     def _broadcast_disconnected(self, uri):
         client = self.clients[uri]

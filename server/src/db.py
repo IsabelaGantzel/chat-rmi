@@ -82,6 +82,15 @@ def get_room_by_id(id: int):
     return Room(*result) if result is not None else None
 
 
+def get_rooms_by_owner(user_id: int):
+    connection = connect()
+    cursor = connection.cursor()
+    args = [user_id]
+    cursor.execute("SELECT * FROM salas WHERE dono_usuario_id = ?", args)
+    result = cursor.fetchall()
+    return [Room(*it) for it in result]
+
+
 def register_room(user_id: int, name: str, uri: str, mode: int):
     connection = connect()
     cursor = connection.cursor()

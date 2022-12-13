@@ -1,10 +1,13 @@
+import queue
+import threading
+import time
 import Pyro4
 
 from .api import Api, USER_ALREADY_EXISTS, USER_NOT_FOUND, INVALID_PASSWORD
-from .tk.signin import TkSignin
-from .tk.signup import TkSignup
-from .tk.chat import TkChat
-from .tk.alert import alert
+from .tk.tk_signin import TkSignin
+from .tk.tk_signup import TkSignup
+from .tk.tk_chat import TkChat
+from .tk.tk_alert import alert
 from .models import User, Room
 from .rmi_client import RmiClient
 from src.cmd import (
@@ -71,6 +74,26 @@ def menu_interactive(api: Api):
 
 
 def chat(api: Api, room: Room, user: User):
+    messages = queue.Queue()
+
+    def delete_task():
+        while True:
+            other_user = messages.get()
+
+            if other_user is None:
+                continue
+
+            if rmi_server is None:
+                time.sleep(0.1)
+                messages.put(other_user)
+                continue
+
+            rmi_server.delete_user(other_user)
+
+    thread = threading.Thread(target=delete_task)
+    thread.daemon = True
+    thread.start()
+
     def on_send_message(other_user, message):
         if other_user is None:
             message = f"{user.username}: {message}"
@@ -80,15 +103,22 @@ def chat(api: Api, room: Room, user: User):
     def on_send_file(other_user):
         print(other_user)
 
+    def on_delete(other_user):
+        messages.put(other_user)
+
     def on_close():
+        try:
         if rmi_client is not None and rmi_server is not None:
             rmi_server.disconnect(rmi_client.uri)
         api.disconnect_to_room(user.id, room.id)
+        except Exception:
+            pass
 
     rmi_client = None
     rmi_server = None
     try:
-        ui = TkChat(user.username)
+        admin = user.id == room.owner_id
+        ui = TkChat(user.username, admin)
 
         rmi_client = RmiClient(ui, user)
         rmi_server = Pyro4.Proxy(room.uri)
@@ -107,6 +137,7 @@ def chat(api: Api, room: Room, user: User):
         ui.on_send_file = on_send_file
         ui.on_send_message = on_send_message
         ui.on_close = on_close
+        ui.on_delete = on_delete
         ui.run()
     except Exception as e:
         on_close()
