@@ -7,7 +7,7 @@ from .api import Api, USER_ALREADY_EXISTS, USER_NOT_FOUND, INVALID_PASSWORD
 from .tk.tk_signin import TkSignin
 from .tk.tk_signup import TkSignup
 from .tk.tk_chat import TkChat
-from .tk.tk_alert import alert
+from .tk.tk_alert import tk_alert
 from .models import User, Room
 from .rmi_client import RmiClient
 from src.cmd import (
@@ -33,10 +33,10 @@ def signin(api: Api):
             return ui.destroy()
 
         if error == USER_NOT_FOUND:
-            return alert.showerror("Erro", "Usuário não encontrado!")
+            return tk_alert.showerror("Erro", "Usuário não encontrado!")
 
         if error == INVALID_PASSWORD:
-            return alert.showerror("Erro", "Senha incorreta!")
+            return tk_alert.showerror("Erro", "Senha incorreta!")
 
     user = None
     ui = TkSignin()
@@ -53,7 +53,7 @@ def signup(api: Api):
             return ui.destroy()
 
         if error == USER_ALREADY_EXISTS:
-            return alert.showerror("Erro", "Usuário já cadastrado")
+            return tk_alert.showerror("Erro", "Usuário já cadastrado")
 
     ui = TkSignup()
     ui.on_submit = on_submit
@@ -108,9 +108,9 @@ def chat(api: Api, room: Room, user: User):
 
     def on_close():
         try:
-        if rmi_client is not None and rmi_server is not None:
-            rmi_server.disconnect(rmi_client.uri)
-        api.disconnect_to_room(user.id, room.id)
+            if rmi_client is not None and rmi_server is not None:
+                rmi_server.disconnect(rmi_client.uri)
+                api.disconnect_to_room(user.id, room.id)
         except Exception:
             pass
 

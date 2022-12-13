@@ -1,1 +1,1 @@
-import tkinter.messagebox as alert
+import tkinter.messagebox as tk_alert
