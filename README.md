@@ -61,27 +61,3 @@ Você foi contratado para o desenvolvimento de um sistema para comunicação int
 6) Exclusão: um usuário poderá requisitar ao servidor que um usuário seja banido da aplicação. Banir um usuário do grupo é tarefa do administrador do grupo. Caso o administrador do grupo saia, o aplicativo deve decidir quem será o novo administrador, ou se o grupo seja eliminado. Tal opção pode ser ajustada no momento da criação do chat em grupo. 
 
 É importante que se tenha telas intuitivas, modernas e "caprichadas" tanto para o cliente quanto para o servidor. Ainda, deve-se apresentar os diagramas UML (atividades, sequencia e classes).
-
-
-# Todo
-
-- Esquema do banco
-```sql
--- Criar tabela de usuários
-CREATE TABLE usuarios (
-	id 			number PRIMARY KEY,
-	acesso	text,
-	senha 	text
-)
-
--- Criar tabela de sala
-CREATE TABLE sala (
-	id 							number PRIMARY KEY,
-	dono_usuario_id number,
-	FOREIGN KEY (dono_usuario_id) REFERENCES usuarios (id)
-)
-```
-
-- [OK] Criar um terminal interativo para **entrar** com um usuário ou **registrar** um novo usuário
-- Armazenar os usuários de cada sala em memória
-

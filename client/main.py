@@ -9,4 +9,4 @@ if __name__ == "__main__":
 
     api = Api(server, port)
     logged_user = src.cmd_tk.menu_interactive(api)
-    src.cmd.room_interactive(api, logged_user)
+    src.cmd_tk.room_interactive(api, logged_user)

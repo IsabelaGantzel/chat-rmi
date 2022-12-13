@@ -28,9 +28,11 @@ USERS_LIST_CONFIG = dict(
 
 
 class TkChat(tk.Tk):
-    def __init__(self) -> None:
+    def __init__(self, title) -> None:
         super().__init__()
         self.selected_user = None
+        self.running = False
+        self.title(title)
 
         self.declare_events()
         self.create_ui()
@@ -38,10 +40,10 @@ class TkChat(tk.Tk):
     def declare_events(self):
         self.on_send_message = None
         self.on_send_file = None
+        self.on_close = None
 
     def create_ui(self):
         self.geometry("600x500")
-        self.title("UI")
         self.configure()
         self.grid_rows_columns(10, 12)
         self.configure_layout((9, 4), (9, 8))
@@ -94,6 +96,8 @@ class TkChat(tk.Tk):
 
         self.users_list.insert(tk.END, "<Todos>")
 
+        self.protocol("WM_DELETE_WINDOW", self.handle_close)
+
     def grid_columns(self, n: int) -> None:
         for i in range(n):
             self.columnconfigure(i, weight=1)
@@ -127,7 +131,15 @@ class TkChat(tk.Tk):
         self.bottom = tk.Frame(self)
         self.bottom.grid(**config, padx=5, pady=(0, 5))
 
+    def handle_close(self):
+        if self.on_close is not None:
+            self.on_close()
+        self.destroy()
+
     def handle_send_button(self):
+        if self.on_send_message is None:
+            return
+
         index = self.selected_user
         username = None if index is None else self.users_list.get(index)
         message = self.message_input.get()
@@ -136,6 +148,9 @@ class TkChat(tk.Tk):
             self.on_send_message(username, message)
 
     def handle_send_file_button(self):
+        if self.on_send_file is None:
+            return
+
         if self.selected_user is not None:
             index = self.selected_user
             username = self.users_list.get(index)
@@ -158,11 +173,23 @@ class TkChat(tk.Tk):
 
                 self.users_list.insert(i, it)
 
-    def add_message(self, message):
+    def add_message(self, message: str):
         self.messages_list.insert(tk.END, message)
 
-    def add_user(self, user):
+    def add_user(self, user: str):
         self.users_list.insert(tk.END, user)
+
+    def remove_user(self, user: str):
+        index = self.users_list.get(0, tk.END).index(user)
+        self.users_list.delete(index)
+
+    def run(self):
+        self.running = True
+        try:
+            self.mainloop()
+        except Exception as e:
+            self.handle_close()
+            raise e
 
 
 if __name__ == "__main__":
@@ -173,13 +200,17 @@ if __name__ == "__main__":
     def on_send_file(user):
         print("File")
 
+    def on_close():
+        print("Close")
+
     app = TkChat()
     app.on_send_message = on_send_message
     app.on_send_file = on_send_file
+    app.on_close = on_close
 
     app.add_message("Hello")
     app.add_message("World")
     app.add_user("User 1")
     app.add_user("User 2")
 
-    app.mainloop()
+    app.run()

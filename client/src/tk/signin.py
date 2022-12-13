@@ -22,6 +22,7 @@ class TkSignin(tk.Tk):
 
         self.create_widgets()
 
+        self.focus()
         self.username_entry.focus()
 
     def create_widgets(self):

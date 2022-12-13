@@ -1,6 +1,4 @@
-from .chat import Chat as RmiChat
-
-# from .rmi_chat import RmiChat
+from .rmi_server import RmiServer
 
 import Pyro4
 import threading
@@ -25,8 +23,17 @@ class RmiLobby:
         - chat_p : str - creates a chat named as {chat_p} and registers it.
         - chat_p : chat.RmiChat - registers the chat."""
         if isinstance(chat_p, str):
-            return self.register(RmiChat(name=chat_p))
+            return self.register(RmiServer(name=chat_p))
         elif chat_p is None:
-            return self.register(RmiChat())
-        elif isinstance(chat_p, RmiChat):
+            return self.register(RmiServer())
+        elif isinstance(chat_p, RmiServer):
             return str(self.daemon.register(chat_p))
+
+    def unregister(self, chat_p):
+        """Unregisters a chat from the daemon.
+        - chat_p : str - unregisters the chat with the uri {chat_p}.
+        - chat_p : chat.RmiChat - unregisters the chat."""
+        if isinstance(chat_p, str):
+            self.daemon.unregister(chat_p)
+        elif isinstance(chat_p, RmiServer):
+            self.daemon.unregister(chat_p)

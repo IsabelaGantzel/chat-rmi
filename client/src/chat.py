@@ -9,33 +9,10 @@ from .models import User, Room
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class Chat:
-    def create_messages_box(self):
-        messages_frame = tkinter.Frame(self.top)
-        scrollbar = tkinter.Scrollbar(messages_frame)
-        messages = tkinter.Listbox(
-            messages_frame, height=15, width=50, yscrollcommand=scrollbar.set
-        )
-        scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-        messages.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
-        messages.pack()
-        messages_frame.pack()
-
-        self.messages = messages
-
-    def create_window(self):
-        self.top = tkinter.Tk()
-        self.top.title(self.room.name)
-
-    def create_ui(self):
-        self.create_window()
-        self.create_messages_box()
-
     def __init__(self, api: Api, room: Room, user: User):
         """The instantiation of this class requires:
         - uri : str - uri to connect to chat.
         - username : str - how it shall be displayed for the participants in the chat."""
-        print(user)
-        print(room)
 
         self.api = api
         self.user = user
@@ -64,6 +41,27 @@ class Chat:
         except Exception as e:
             print(e)
             self.disconnect()
+
+    def create_messages_box(self):
+        messages_frame = tkinter.Frame(self.top)
+        scrollbar = tkinter.Scrollbar(messages_frame)
+        messages = tkinter.Listbox(
+            messages_frame, height=15, width=50, yscrollcommand=scrollbar.set
+        )
+        scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+        messages.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
+        messages.pack()
+        messages_frame.pack()
+
+        self.messages = messages
+
+    def create_window(self):
+        self.top = tkinter.Tk()
+        self.top.title(self.room.name)
+
+    def create_ui(self):
+        self.create_window()
+        self.create_messages_box()
 
     def connect(self):
         """Method to connect and register at the chat"""

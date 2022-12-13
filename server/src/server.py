@@ -81,6 +81,7 @@ class Server:
 
                 if len(users) == 1:
                     db.remove_room(room_id)
+                    self.lobby.unregister(room_id)
                 elif len(users) > 1:
                     room = db.get_room_by_id(room_id)
 
