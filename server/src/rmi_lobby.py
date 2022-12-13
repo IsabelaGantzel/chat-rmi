@@ -11,23 +11,16 @@ class RmiLobby:
         - logs chats and hosts it. use 'register' to create new chats."""
         self.daemon = Pyro4.Daemon(host=hostname, port=port)
 
-    def daemon_loop(self):
+    def run(self):
         """Starts the daemon"""
         self.d_thread = threading.Thread(target=self.daemon.requestLoop)
         self.d_thread.daemon = True
         self.d_thread.start()
 
-    def register(self, chat_p) -> str:
-        """Logs a new chat to the daemon and hosts it.
-        - chat_p : None - A nameless chat is created and hosted.
-        - chat_p : str - creates a chat named as {chat_p} and registers it.
-        - chat_p : chat.RmiChat - registers the chat."""
-        if isinstance(chat_p, str):
-            return self.register(RmiServer(name=chat_p))
-        elif chat_p is None:
-            return self.register(RmiServer())
-        elif isinstance(chat_p, RmiServer):
-            return str(self.daemon.register(chat_p))
+    def register(self, name: str) -> RmiServer:
+        server = RmiServer(name)
+        server.uri = str(self.daemon.register(server))
+        return server
 
     def unregister(self, chat_p):
         """Unregisters a chat from the daemon.

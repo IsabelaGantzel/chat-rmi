@@ -1,4 +1,3 @@
-import traceback
 from typing import NamedTuple
 import Pyro4
 
@@ -8,9 +7,10 @@ Client = NamedTuple("Client", [("proxy", Pyro4.Proxy), ("username", str), ("uri"
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class RmiServer:
-    def __init__(self, name=None):
+    def __init__(self, name: str):
         self._name = name
-        self.messages = []
+        self._messages = []
+        self.uri = None
         self.clients = {}
 
     def connect(self, uri):
@@ -19,12 +19,6 @@ class RmiServer:
         self.clients[uri] = client
         self._broadcast_message(f"User '{client.username}' has joined the chat", uri)
         self._broadcast_connected(uri)
-
-    def get_last_messages(self):
-        return self.messages
-        if len(self.messages) < 21:
-            return self.messages
-        return self.messages[-20:]
 
     def disconnect(self, uri):
         client = self.clients[uri]
@@ -57,6 +51,12 @@ class RmiServer:
                 client.proxy.user_removed()
                 return
 
+    def get_messages(self):
+        return self._messages
+
+    def get_name(self):
+        return self._name
+
     def _broadcast_disconnected(self, uri):
         client = self.clients[uri]
         for other_client in self.clients.values():
@@ -73,15 +73,11 @@ class RmiServer:
 
     def _broadcast_message(self, message, uri=None):
         print("[INFO]", message)
-        self.messages.append(message)
+        self._messages.append(message)
         for other_client in self.clients.values():
             if other_client.uri == uri:
                 continue
             other_client.proxy.add_message(message)
 
     def __str__(self):
-        return f"chat named {self.name}"
-
-    @property
-    def name(self):
-        return self._name
+        return f"chat named {self._name}"

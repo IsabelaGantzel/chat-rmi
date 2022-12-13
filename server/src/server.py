@@ -17,7 +17,7 @@ class Server:
 
         print("Setting up daemon")
         self.lobby = RmiLobby(hostname=hostname, port=lobby_port)
-        self.lobby.daemon_loop()
+        self.lobby.run()
 
         print("Setting up server")
         self._server = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
@@ -58,7 +58,7 @@ class Server:
                 rooms_count = db.get_next_room_id()
                 room_name = f"Sala {rooms_count}"
 
-                uri = self.lobby.register(room_name)
+                server_rmi = self.lobby.register(room_name)
                 user = db.get_user_by_id(user_id)
 
                 result = None
@@ -70,7 +70,7 @@ class Server:
                         db.remove_room(room.id)
                         self.lobby.unregister(room.id)
 
-                    result = db.register_room(user.id, room_name, uri, chat_mode)
+                    result = db.register_room(user.id, room_name, server_rmi.uri, chat_mode)
 
                 conn.send(json.dumps(result).encode())
 

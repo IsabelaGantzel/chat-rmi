@@ -1,11 +1,11 @@
 import queue
 import threading
 import time
-import Pyro4
 
 from ..api import Api
 from ..models import Room, User
 from ..rmi_client import RmiClient
+from ..rmi_server import RmiServer
 from ..tk.tk_chat import TkChat
 
 
@@ -58,12 +58,13 @@ def chat(api: Api, room: Room, user: User):
     rmi_server = None
     try:
         admin = user.id == room.owner_id
-        ui = TkChat(user.username, admin)
+        ui = TkChat(admin)
 
         rmi_client = RmiClient(ui, user)
-        rmi_server = Pyro4.Proxy(room.uri)
+        rmi_server = RmiServer.create(room.uri)
 
         rmi_server.connect(rmi_client.uri)
+        ui.set_title(f"{rmi_server.get_name()} ({user.username})")
 
         api.connect_to_room(user.id, room.id)
 
@@ -71,7 +72,7 @@ def chat(api: Api, room: Room, user: User):
             if username != user.username:
                 ui.add_user(username)
 
-        for message in rmi_server.get_last_messages():
+        for message in rmi_server.get_messages():
             ui.add_message(message)
 
         ui.on_send_file = on_send_file
