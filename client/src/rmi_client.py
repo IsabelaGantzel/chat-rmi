@@ -20,7 +20,7 @@ class RmiClient:
         thread.daemon = True
         thread.start()
 
-    def incoming_message(self, message):
+    def add_message(self, message):
         if self.ui.running:
             self.ui.add_message(message)
 

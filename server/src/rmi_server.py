@@ -67,7 +67,7 @@ class RmiServer:
         for other_client in self.clients.values():
             if other_client.uri == uri:
                 continue
-            other_client.proxy.incoming_message(message)
+            other_client.proxy.add_message(message)
 
     def __str__(self):
         return f"chat named {self.name}"

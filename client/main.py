@@ -1,5 +1,5 @@
 import src.cmd
-import src.cmd_tk
+import src.tk_chat.cmd
 from src.api import Api
 
 
@@ -8,5 +8,5 @@ if __name__ == "__main__":
     port = 25500
 
     api = Api(server, port)
-    logged_user = src.cmd_tk.menu_interactive(api)
-    src.cmd_tk.room_interactive(api, logged_user)
+    logged_user = src.tk_chat.cmd.menu_interactive(api)
+    src.tk_chat.cmd.room_interactive(api, logged_user)

@@ -3,7 +3,7 @@ from typing import List
 
 from .models import User, Room
 from .api import INVALID_PASSWORD, USER_ALREADY_EXISTS, USER_NOT_FOUND, Api
-from .chat import Chat
+from .tk_chat.chat import chat
 
 MENU_OPTION_SIGNIN = 1
 MENU_OPTION_SIGNUP = 2
@@ -212,11 +212,11 @@ def room_interactive(api: Api, logged_user: User):
 
         if option == MENU_OPTION_JOIN_ROOM:
             room = select_room(rooms)
-            Chat(api, room, logged_user)
+            chat(api, room, logged_user)
             break
 
         if option == MENU_OPTION_CREATE_ROOM:
             room_mode = get_room_mode()
             room = api.register_room(logged_user.id, room_mode)
-            Chat(api, room, logged_user)
+            chat(api, room, logged_user)
             break
