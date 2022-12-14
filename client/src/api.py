@@ -25,7 +25,7 @@ class Api:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.server, self.port))
 
-    def _send(self, message):
+    def _send(self, message: str):
         self.socket.send(message.encode())
         serialized = self.socket.recv(4096).decode("utf-8")
         return json.loads(serialized)
@@ -44,6 +44,7 @@ class Api:
         result[0] = User(*result[0]) if result[0] is not None else None
         return result
 
+    # @Deprecated
     def get_rooms(self):
         result = self._request("GET rooms")
         return [Room(*it) for it in result]

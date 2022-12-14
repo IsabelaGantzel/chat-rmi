@@ -5,6 +5,10 @@ from ..tk.tk_alert import tk_alert
 
 def signup(api: Api):
     def on_submit(username, password):
+        # TODO: Validar username e password
+        if len(password) < 4:
+            return tk_alert.showerror("Erro", "A senha deve ter no mínimo 4 caracteres")
+
         (_, error) = api.signup(username, password)
 
         if error is None:

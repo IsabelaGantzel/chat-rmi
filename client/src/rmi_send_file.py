@@ -18,6 +18,7 @@ class RmiSendFile:
         self.file = self.filename.open(mode="wb")
 
     def send_data(self, data: dict):
+        # data: { "data": str, "type": "base64" }
         if self.completed and self.file is None:
             return False
 

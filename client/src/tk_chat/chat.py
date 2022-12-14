@@ -24,15 +24,6 @@ def chat(api: Api, room: Room, user: User):
 
             if action == ACTION_DELETE:
                 other_user = data
-
-                if other_user is None:
-                    continue
-
-                if rmi_server is None:
-                    time.sleep(0.1)
-                    actions.put(other_user)
-                    continue
-
                 rmi_server.delete_user(other_user)
 
             if action == ACTION_SEND_FILE:
@@ -51,6 +42,7 @@ def chat(api: Api, room: Room, user: User):
                     )
                     continue
 
+                # Acesso direto ao outro usuário
                 rmi_send_file = RmiSendFile.create(send_file_uri)
                 rmi_send_file.open_file(filepath)
 
@@ -66,8 +58,8 @@ def chat(api: Api, room: Room, user: User):
                         if not rmi_send_file.send_data(data):
                             break
 
+                rmi_send_file.complete()
                 if completed:
-                    rmi_send_file.complete()
                     tk_alert.showinfo(
                         "Arquivo enviado",
                         "Arquivo enviado com sucesso!",
@@ -85,11 +77,11 @@ def chat(api: Api, room: Room, user: User):
     def on_send_message(other_user, message):
         if other_user is None:
             message = f"{user.username}: {message}"
-            rmi_client.add_message(message)
+            ui.add_message(message)
             rmi_server.send_message(message, rmi_client.uri)
         else:
             message = f"{user.username} -> {other_user}: {message}"
-            rmi_client.add_message(message)
+            ui.add_message(message)
             rmi_server.send_private_message(message, other_user, rmi_client.uri)
 
     def on_send_file(other_user):

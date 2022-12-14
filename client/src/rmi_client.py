@@ -28,10 +28,12 @@ class RmiClient:
 
     def user_connected(self, username):
         if self.ui.running:
+            self.ui.add_message(f"Usuário '{username}' foi conectado!")
             self.ui.add_user(username)
 
     def user_disconnected(self, username):
         if self.ui.running:
+            self.ui.add_message(f"Usuário '{username}' foi desconectado!")
             self.ui.remove_user(username)
 
     def user_removed(self):

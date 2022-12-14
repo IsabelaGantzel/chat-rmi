@@ -1,15 +1,17 @@
 from typing import NamedTuple
 import Pyro4
 
-Client = NamedTuple("Client", [("proxy", Pyro4.Proxy), ("username", str), ("uri", str)])
+from .rmi_client import RmiClient
+
+Client = NamedTuple("Client", [("proxy", RmiClient), ("username", str), ("uri", str)])
 
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class RmiServer:
     def __init__(self, name: str):
-        self._name = name
-        self._messages = []
+        self.name = name
+        self.messages = []
         self.uri = None
         self.clients = {}
 
@@ -18,15 +20,12 @@ class RmiServer:
             client.proxy.user_removed()
 
     def connect(self, uri):
-        proxy = Pyro4.Proxy(uri)
+        proxy = RmiClient.create(uri)
         client = Client(proxy, proxy.username, uri)
         self.clients[uri] = client
-        self._broadcast_message(f"User '{client.username}' has joined the chat", uri)
         self._broadcast_connected(uri)
 
     def disconnect(self, uri):
-        client = self.clients[uri]
-        self._broadcast_message(f"User '{client.username}' has disconnected.", uri)
         self._broadcast_disconnected(uri)
         del self.clients[uri]
 
@@ -48,10 +47,10 @@ class RmiServer:
             client.proxy.user_removed()
 
     def get_messages(self):
-        return self._messages
+        return self.messages
 
     def get_name(self):
-        return self._name
+        return self.name
 
     def send_file(self, username: str) -> None:
         client = self._get_client_by_username(username)
@@ -79,11 +78,11 @@ class RmiServer:
 
     def _broadcast_message(self, message, uri=None):
         print("[INFO]", message)
-        self._messages.append(message)
+        self.messages.append(message)
         for other_client in self.clients.values():
             if other_client.uri == uri:
                 continue
             other_client.proxy.add_message(message)
 
     def __str__(self):
-        return f"chat named {self._name}"
+        return f"chat named {self.name}"

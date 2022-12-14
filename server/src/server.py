@@ -39,12 +39,12 @@ class Server:
 
             if message.startswith("POST signin;"):
                 values = message.split(";")
-                result = auth.signin(values[1], values[2])
+                result = auth.signin(username=values[1], password=values[2])
                 conn.send(json.dumps(result).encode())
 
             if message.startswith("POST signup;"):
                 values = message.split(";")
-                result = auth.signup(values[1], values[2])
+                result = auth.signup(username=values[1], password=values[2])
                 conn.send(json.dumps(result).encode())
 
             if message == "GET rooms":
@@ -53,8 +53,7 @@ class Server:
 
             if message.startswith("POST register-room;"):
                 values = message.split(";")
-                user_id = values[1]
-                user = db.get_user_by_id(user_id)
+                user = db.get_user_by_id(user_id=values[1])
 
                 rooms_count = db.get_next_room_id()
                 room_name = f"Sala {rooms_count} - {user.username}"
@@ -63,22 +62,24 @@ class Server:
 
                 result = None
                 if user is not None:
-                    chat_mode = values[2]
+                    rooms = db.get_rooms_by_owner(user.id)
 
-                    rooms = db.get_rooms_by_owner(user_id)
                     for room in rooms:
                         db.remove_room(room.id)
-                        self.lobby.unregister(room.id)
+                        self.lobby.unregister(room.uri)
 
                     result = db.register_room(
-                        user.id, room_name, server_rmi.uri, chat_mode
+                        user_id=user.id,
+                        name=room_name,
+                        uri=server_rmi.uri,
+                        mode=values[2],
                     )
 
                 conn.send(json.dumps(result).encode())
 
             if message.startswith("POST connect-to-room;"):
                 values = message.split(";")
-                result = db.register_user_in_room(values[1], values[2])
+                result = db.register_user_in_room(user_id=values[1], room_id=values[2])
                 conn.send(json.dumps(result).encode())
 
             if message.startswith("POST disconnect-to-room;"):

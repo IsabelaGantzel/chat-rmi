@@ -2,16 +2,17 @@
 
 ```bash
 # Instalação das dependencias
-pip3 install -r requirements.txt
+pip3 install -r client/requirements.txt
+pip3 install -r server/requirements.txt
 
 # Criar e inicializar o banco de dados
-python3 migration.py up
+python3 server/migration.py up
 
 # Executar o servidor
-python3 server.py
+python3 server/main.py
 
 # Executar o cliente
-python3 client.py
+python3 client/main.py
 ```
 
 
