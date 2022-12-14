@@ -5,28 +5,80 @@ import time
 from ..api import Api
 from ..models import Room, User
 from ..rmi_client import RmiClient
+from ..rmi_send_file import RmiSendFile
 from ..rmi_server import RmiServer
+from ..tk.tk_alert import tk_alert
 from ..tk.tk_chat import TkChat
+from ..tk.tk_file import tk_file
+
+ACTION_DELETE = 1
+ACTION_SEND_FILE = 2
 
 
 def chat(api: Api, room: Room, user: User):
-    messages = queue.Queue()
+    actions = queue.Queue()
 
-    def delete_task():
+    def actions_task():
         while True:
-            other_user = messages.get()
+            (action, data) = actions.get()
 
-            if other_user is None:
-                continue
+            if action == ACTION_DELETE:
+                other_user = data
 
-            if rmi_server is None:
-                time.sleep(0.1)
-                messages.put(other_user)
-                continue
+                if other_user is None:
+                    continue
 
-            rmi_server.delete_user(other_user)
+                if rmi_server is None:
+                    time.sleep(0.1)
+                    actions.put(other_user)
+                    continue
 
-    thread = threading.Thread(target=delete_task)
+                rmi_server.delete_user(other_user)
+
+            if action == ACTION_SEND_FILE:
+                other_user = data
+
+                filepath = tk_file.askopenfilename(title="Informe o caminho do arquivo")
+
+                if len(filepath) == 0:
+                    continue
+
+                send_file_uri = rmi_server.send_file(other_user)
+                if send_file_uri is None:
+                    tk_alert.showerror(
+                        "Erro",
+                        "Falha ao se conectar com o outro cliente",
+                    )
+                    continue
+
+                rmi_send_file = RmiSendFile.create(send_file_uri)
+                rmi_send_file.open_file(filepath)
+
+                completed = False
+                BUFFER_SIZE = 4096
+                with open(filepath, "rb") as file:
+                    while True:
+                        data = file.read(BUFFER_SIZE)
+                        if len(data) == 0:
+                            completed = True
+                            break
+
+                        if not rmi_send_file.send_data(data):
+                            break
+
+                if completed:
+                    rmi_send_file.complete()
+                    tk_alert.showinfo(
+                        "Arquivo enviado",
+                        "Arquivo enviado com sucesso!",
+                    )
+                else:
+                    tk_alert.showerror(
+                        "Erro",
+                        "Falha ao enviar dados para o outro cliente",
+                    )
+
+    thread = threading.Thread(target=actions_task)
     thread.daemon = True
     thread.start()
 
@@ -41,10 +93,10 @@ def chat(api: Api, room: Room, user: User):
             rmi_server.send_private_message(message, other_user, rmi_client.uri)
 
     def on_send_file(other_user):
-        print(other_user)
+        actions.put((ACTION_SEND_FILE, other_user))
 
     def on_delete(other_user):
-        messages.put(other_user)
+        actions.put((ACTION_DELETE, other_user))
 
     def on_close():
         try:

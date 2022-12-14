@@ -1,6 +1,8 @@
 import threading
 import Pyro4
+
 from .models import User
+from .rmi_send_file import RmiSendFile
 from .tk.tk_chat import TkChat
 
 
@@ -13,10 +15,10 @@ class RmiClient:
         self._register()
 
     def _register(self):
-        daemon = Pyro4.Daemon()
-        self.uri = daemon.register(self)
+        self.daemon = Pyro4.Daemon()
+        self.uri = self.daemon.register(self)
 
-        thread = threading.Thread(target=daemon.requestLoop)
+        thread = threading.Thread(target=self.daemon.requestLoop)
         thread.daemon = True
         thread.start()
 
@@ -35,6 +37,11 @@ class RmiClient:
     def user_removed(self):
         if self.ui.running:
             self.ui.handle_close()
+
+    def receive_file(self) -> Pyro4.URI:
+        send_file = RmiSendFile(self.daemon)
+        uri = str(self.daemon.register(send_file))
+        return uri
 
     @property
     def username(self):

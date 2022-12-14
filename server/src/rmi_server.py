@@ -33,21 +33,19 @@ class RmiServer:
     def send_message(self, message, uri):
         self._broadcast_message(message, uri)
 
-    def send_private_message(self, message, other_username, uri):
+    def send_private_message(self, message, other_username, _uri):
         print("[INFO]", message)
-        for other_client in self.clients.values():
-            if other_client.username == other_username:
-                other_client.proxy.add_message(message)
-                return
+        client = self._get_client_by_username(other_username)
+        if client is not None:
+            client.proxy.add_message(message)
 
     def get_connected_users(self):
         return [client.username for client in self.clients.values()]
 
     def delete_user(self, username):
-        for client in self.clients.values():
-            if client.username == username:
-                client.proxy.user_removed()
-                return
+        client = self._get_client_by_username(username)
+        if client is not None:
+            client.proxy.user_removed()
 
     def get_messages(self):
         return self._messages
@@ -55,14 +53,24 @@ class RmiServer:
     def get_name(self):
         return self._name
 
-    def _broadcast_disconnected(self, uri):
+    def send_file(self, username: str) -> None:
+        client = self._get_client_by_username(username)
+        if client is not None:
+            return client.proxy.receive_file()
+
+    def _get_client_by_username(self, username: str):
+        for client in self.clients.values():
+            if client.username == username:
+                return client
+
+    def _broadcast_disconnected(self, uri: Pyro4.URI):
         client = self.clients[uri]
         for other_client in self.clients.values():
             if other_client.uri == client.uri:
                 continue
             other_client.proxy.user_disconnected(client.username)
 
-    def _broadcast_connected(self, uri):
+    def _broadcast_connected(self, uri: Pyro4.URI):
         client = self.clients[uri]
         for other_client in self.clients.values():
             if other_client.uri == client.uri:

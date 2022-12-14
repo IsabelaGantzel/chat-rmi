@@ -30,3 +30,6 @@ class RmiServer:
 
     def get_name(self) -> str:
         ...
+
+    def send_binary_data(self, data: bin) -> None:
+        ...
