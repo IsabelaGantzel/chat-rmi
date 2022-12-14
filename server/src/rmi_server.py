@@ -13,6 +13,10 @@ class RmiServer:
         self.uri = None
         self.clients = {}
 
+    def close(self):
+        for client in self.clients.values():
+            client.proxy.user_removed()
+
     def connect(self, uri):
         proxy = Pyro4.Proxy(uri)
         client = Client(proxy, proxy.username, uri)
@@ -27,15 +31,9 @@ class RmiServer:
         del self.clients[uri]
 
     def send_message(self, message, uri):
-        if uri not in self.clients:
-            return
-
         self._broadcast_message(message, uri)
 
     def send_private_message(self, message, other_username, uri):
-        if uri not in self.clients:
-            return
-
         print("[INFO]", message)
         for other_client in self.clients.values():
             if other_client.username == other_username:

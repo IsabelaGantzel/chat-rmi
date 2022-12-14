@@ -10,8 +10,9 @@ class RmiLobby:
         - port : int (default=25501) - port which the daemon should run.
         - logs chats and hosts it. use 'register' to create new chats."""
         self.daemon = Pyro4.Daemon(host=hostname, port=port)
+        self.servers = {}
 
-    def run(self):
+    def run(self) -> None:
         """Starts the daemon"""
         self.d_thread = threading.Thread(target=self.daemon.requestLoop)
         self.d_thread.daemon = True
@@ -20,13 +21,11 @@ class RmiLobby:
     def register(self, name: str) -> RmiServer:
         server = RmiServer(name)
         server.uri = str(self.daemon.register(server))
+        self.servers[server.uri] = server
         return server
 
-    def unregister(self, chat_p):
-        """Unregisters a chat from the daemon.
-        - chat_p : str - unregisters the chat with the uri {chat_p}.
-        - chat_p : chat.RmiChat - unregisters the chat."""
-        if isinstance(chat_p, str):
-            self.daemon.unregister(chat_p)
-        elif isinstance(chat_p, RmiServer):
-            self.daemon.unregister(chat_p)
+    def unregister(self, uri: str) -> None:
+        # server = self.servers[uri]
+        # server.close()
+        self.daemon.unregister(uri)
+        del self.servers[uri]

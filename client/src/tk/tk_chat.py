@@ -231,6 +231,8 @@ class TkChat:
         except Exception as e:
             self.handle_close()
             raise e
+        finally:
+            self.running = False
 
 
 if __name__ == "__main__":

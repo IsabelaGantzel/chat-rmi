@@ -171,7 +171,7 @@ def select_room(rooms: List[Room]) -> Room:
     while True:
         print("Chats disponíveis:")
         for n, room in enumerate(rooms):
-            print(f"  {n}: {room.name}")
+            print(f"  {n + 1}: {room.name}")
 
         value = get_value()
 
@@ -181,11 +181,11 @@ def select_room(rooms: List[Room]) -> Room:
 
         value = int(value)
 
-        if value >= len(rooms):
+        if 0 >= value and value > len(rooms):
             print("Erro: Número inválido")
             continue
 
-        return rooms[value]
+        return rooms[value - 1]
 
 
 def get_room_mode():

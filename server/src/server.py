@@ -54,12 +54,12 @@ class Server:
             if message.startswith("POST register-room;"):
                 values = message.split(";")
                 user_id = values[1]
+                user = db.get_user_by_id(user_id)
 
                 rooms_count = db.get_next_room_id()
-                room_name = f"Sala {rooms_count}"
+                room_name = f"Sala {rooms_count} - {user.username}"
 
                 server_rmi = self.lobby.register(room_name)
-                user = db.get_user_by_id(user_id)
 
                 result = None
                 if user is not None:
@@ -70,7 +70,9 @@ class Server:
                         db.remove_room(room.id)
                         self.lobby.unregister(room.id)
 
-                    result = db.register_room(user.id, room_name, server_rmi.uri, chat_mode)
+                    result = db.register_room(
+                        user.id, room_name, server_rmi.uri, chat_mode
+                    )
 
                 conn.send(json.dumps(result).encode())
 
@@ -81,21 +83,37 @@ class Server:
 
             if message.startswith("POST disconnect-to-room;"):
                 values = message.split(";")
-                user_id = values[1]
-                room_id = values[2]
-                users = db.get_room_users(room_id)
-
-                if len(users) == 1:
-                    db.remove_room(room_id)
-                    self.lobby.unregister(room_id)
-                elif len(users) > 1:
-                    room = db.get_room_by_id(room_id)
-
-                    if room.owner_id == user_id:
-                        db.remove_room(room_id)
-                    else:
-                        db.remove_user_in_room(user_id, room_id)
-
+                use_case = DisconectUserUseCase(self.lobby)
+                use_case.execute(user_id=values[1], room_id=values[2])
                 conn.send(json.dumps(None).encode())
 
             conn.close()
+
+
+class DisconectUserUseCase:
+    def __init__(self, lobby: RmiLobby) -> None:
+        self.lobby = lobby
+
+    def execute(self, user_id: int, room_id: int):
+        room = db.get_room_by_id(room_id)
+
+        if room is None:
+            return
+
+        user = db.get_user_by_id(user_id)
+
+        if user is None:
+            return
+
+        users_in_room = db.get_room_users(room_id)
+
+        if len(users_in_room) <= 1:
+            db.remove_room(room.id)
+            self.lobby.unregister(room.uri)
+            return
+
+        if False and room.owner_id == user.id:
+            db.remove_room(room.id)
+            self.lobby.unregister(room.uri)
+        else:
+            db.remove_user_in_room(user.id, room.id)

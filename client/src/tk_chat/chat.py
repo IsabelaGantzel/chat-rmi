@@ -64,7 +64,9 @@ def chat(api: Api, room: Room, user: User):
         rmi_server = RmiServer.create(room.uri)
 
         rmi_server.connect(rmi_client.uri)
-        ui.set_title(f"{rmi_server.get_name()} ({user.username})")
+        ui.set_title(
+            f"{rmi_server.get_name()} ({'*admin' if admin else user.username})"
+        )
 
         api.connect_to_room(user.id, room.id)
 
