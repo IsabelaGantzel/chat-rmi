@@ -53,7 +53,7 @@ class Server:
 
             if message.startswith("POST register-room;"):
                 values = message.split(";")
-                user = db.get_user_by_id(user_id=values[1])
+                user = db.get_user_by_id(id=values[1])
 
                 rooms_count = db.get_next_room_id()
                 room_name = f"Sala {rooms_count} - {user.username}"
